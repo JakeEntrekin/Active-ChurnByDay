@@ -1,0 +1,53 @@
+Daily Active Users/Churn
+
+Overall Methodology
+1.	DataGrip is the data management tool chosen to connect to the source schema [source_data] and to create a dimensional model in [jentrekin] schema.
+2.	DataGrip SQL Dialect is set to use SQL Server
+a.	The author’s experience is working within SQL Server environments, so in order for the scripts that are in the Gist submission to work properly require you to set your dialect to SQL Server.
+3.	Orchestration would have used Matillion ETL as this robust product is designed and optimized to be used with Redshift columnstore databases.  However, I ran out of time and was not able to orchestrate the jobs.  However, this would be a trivial task and I do have a list of execution steps in the README file accompanying this submission.
+4.	Split out User/Account to separate dimension tables
+a.	To set up a proper star schema, it was apparent that UserId, UserDescription, Accountid, AccountDescription fields would be necessary, and would also be good candidates for dimensional tables.
+b.	Setting up the DDL to use an Identity column to create surrogate keys, allows the fact table to have the same field as foreign key references.
+c.	AccountId ---> translates to the dimAccount.AccountKey surrogate key
+d.	UserID ----> translates to the dimUsers.UserKey surrogate key
+e.	Essentially we are populating a distinct list of uses/accounts in each dimension table.
+5.	ViewDimAccount, viewDimUsers
+a.	The views here are required as a limitation of the designer’s knowledge as it pertains to Redshift.
+b.	Since Redshift does not allow the use of IDENTITY_INSERT commands, the view essentially takes care of this by adding a single UNION ALL statement that appends a -1 value for AccountKey/UserKey.
+c.	This is for the case where a lookup transformation between a fact record and the dimensional table produces a NULL value – we don’t want NULL foreign keys, so we are assigning an arbitrary value to designate that this is an unknown dimension member for now.
+6.	DateTable
+a.	A common strategy is to build out a list of calendar dates for each day of a given year so that analysis such as getting counts by day become much easier.
+b.	The DateKey configuration is going to be YYYYMMDD as an integer value.  Dates in the transaction/fact tables can easily be converted to this integer representation.  Example 2017-05-01 = 20170501
+c.	A current day of year flag is also embedded in the data population script.  This would allow you to only pull back counts for the ‘current’ day if this was a database that was updated daily.
+7.	Nested CTE’s (Common Table Expressions)
+a.	The use of nested CTE’S allows multiple groups of code to reference previously built data sets.
+b.	This is similar to temp table methodology, but doesn’t require writing to tempdb on SQL Server, and you can reference complex logic as a single field name instead of having to encapsulate complex transformations inside of other commands
+8.	SQL Server Window Functions
+a.	SQL Server window functions have been employed to break up a given user’s range of login activity.
+b.	Row_Number() Over (order by… partition by…) is employed to get either a list of unique row numbers OR a logical partitioning of data that makes certain analysis simpler.
+c.	The goal is to break out a set of ‘groupings’ where there are gaps between logins by flattening out the multiple transactions into current and next images.  Then we can compare the current login activity to the next login activity, find out how the largest gaps that exist between logins and ultimately determining a set of Type II SCD valid from/valid to date ranges for each set of login groupins.
+d.	By using the recursive nature of login_date –  row_number() over (order by user_id, login_date), we can create a ‘grouping’ of dates that correspond to consecutive logins.
+9.	Using userid = 104289 as an example, let’s walk through the first section of the nested CTE process:
+a.	Step 1: The first part of the nested CTE process first creates a list of distinct userid’s, sum of tasks_used, user_id and UserKey (sk value).
+b.	Step2: Using the SQL Server window function login_date - row_number() OVER (ORDER BY user_id, login_date) AS grp, we essentially build out a list of login activity along with a grouping anchor.  For example, see below where the login_date = 2017-05-07. You can see that any consecutive days where there is login activity, the anchor grp value remains constant.  This allows us to be able to reduce the number of transactions as well as being able to track the largest gaps in activity.
+--STEP 1
+WITH
+  login_dates AS (
+    SELECT sum(tasks_used) as tasks_used_per_day, user_id, userkey,
+      date as login_date
+    from jentrekin.tasksuseddetail
+   where user_id = 104289
+      group by user_id, userkey,
+      date
+    order by login_date
+  )
+--  ,--STEP2 
+--  login_date_groups AS (
+    SELECT
+      login_date,
+      login_date - row_number() OVER (ORDER BY user_id, login_date) AS grp, -- Subtracts the current row_number from the current login_date – if the logins are sequential (back-to-back days), this value is going to remain constant, thus signaling that there were no gaps between logins.
+      tasks_used_per_day,
+      user_id,
+      userkey
+    FROM login_dates
+Refer to Step1_GRPValues.JPG
