@@ -1,7 +1,7 @@
 INSERT INTO jentrekin.dimUsers (user_id, userdescriptrion, insertdate, updatedate)
 SELECT DISTINCT T."user_id ", CAST(T."user_id " AS VARCHAR(255)), GETDATE(), GETDATE()
 from source_data.tasks_used t LEFT JOIN jentrekin.dimUsers d on t."user_id " = d.user_id
-where D.UserKey IS NULL
+where D.UserKey IS NULL;
 
 UPDATE jentrekin.dimUsers
 SET UserDescriptrion = t."user_id "
