@@ -1,4 +1,4 @@
-TRUNCATE TABLE jentrekin.TasksUsedDetail
+--TRUNCATE TABLE jentrekin.TasksUsedDetail
 INSERT INTO jentrekin.TasksUsedDetail ( zap_id, user_id, userkey, account_id, accountkey, date, datekey, min_timestamp, tasks_used, errors)
 SELECT t.zap_id, t."user_id ", coalesce(d.userkey, -1) as UserKey,
   t.account_id, coalesce(dAC.accountkey, -1) as AccountKey, t.date,
