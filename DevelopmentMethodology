@@ -51,3 +51,10 @@ WITH
       userkey
     FROM login_dates
 Refer to Step1_GRPValues.JPG
+
+10.	Staying with the same userid (104289), let’s continue walking through this example.
+a.	In the third layer of the CTE, we’re now defining the ‘first’ login and ‘last’ login for each group from before.
+b.	Staying with the 2015-05-01 group, we can calculate that the min login was 2015-05-07 and the max login was 2015-05-25 and thus the days consecutively logged in was 19.  
+c.	Additionally, the process is defining a unique row number for each user_id and grp value to make it easier to compare the current last login to the next first login.  This will allow us to calculate Churn!
+Refer to ConsecutiveLogins.JPG
+
