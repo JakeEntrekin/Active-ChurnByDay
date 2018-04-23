@@ -1,7 +1,7 @@
 Steps to deploy and execute
 
 Order of Deployment.  In all of the below scripts, you’ll want to connect to the jentrekin schema, right click the schema name, and select New – Console.  Then you’d want to paste the scripts into the new console window and hit either Cntrl+Enter OR the Play button.
-Refer to SQLDialect.JPG
+Refer to SQLDialect.JPG, Console.JPG and 
 
 1.	Execute DateTableDDL.sql
 2.	Execute DateTableFill.sql
