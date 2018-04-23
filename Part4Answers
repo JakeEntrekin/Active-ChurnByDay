@@ -1,0 +1,14 @@
+In infer from the data model that I had to come up with pretty solid sort keys in order to efficiently bring back results on such large data sets.
+Additionally, I had to split out Users to a separate dimension table so that I had a distinct list of records I could identify with a surrogate
+key value for speedier data retrieval in joins.  Furtherore, I realized that I needed a solid date dimension table such that I could leverage
+a date range scan to easily pull back counts for different calendar days.
+
+Dimensions are typically textual values that give context to measures.  In the case of this project, your dimensions are Users and Accounts. 
+Although, per the requirements, accounts don't really come into the picture, but users assuredly do.  Typically, in a data warehouse
+scenario, you're going to define your dimensions with Surrogate Keys and they are going to be connected to your fact tables via foreign
+key references.  In the case of dimUsers, I'm creating a surrogate key by implementing identity values on UserKey.  Then the UserKey gets
+attached to the fact table via a lookup transformation on the native User_Id field.  Similarly, DateTable has surrogate keys, but I'm using
+a sql transformation to convert a date to a YYYYMMDD integer value. Example 2017-06-28 becomes 20170628.  Instead of a lookup, this 
+would involve the query just transforming the date to the same value.  After you're done, you end up with a star schema model with a
+fact table in the center with all of your dimensional tables connected via the appropriate surrogate key (pk + fk pairings).
+
