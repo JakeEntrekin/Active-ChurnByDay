@@ -1,7 +1,9 @@
 Steps to deploy and execute
+The data model was created using DataGrip.  Additionally, you'll need to change your sql dialect to SQL Server.  Refer to SQLDialect.jpg
+for steps.
 
 Order of Deployment.  In all of the below scripts, you’ll want to connect to the jentrekin schema, right click the schema name, and select New – Console.  Then you’d want to paste the scripts into the new console window and hit either Cntrl+Enter OR the Play button.
-Refer to SQLDialect.JPG, Console.JPG and 
+Refer to Console.JPG and Execution.JPG
 
 1.	Execute DateTableDDL.sql
 2.	Execute DateTableFill.sql
