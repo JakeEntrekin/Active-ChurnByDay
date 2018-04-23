@@ -58,3 +58,44 @@ b.	Staying with the 2015-05-01 group, we can calculate that the min login was 20
 c.	Additionally, the process is defining a unique row number for each user_id and grp value to make it easier to compare the current last login to the next first login.  This will allow us to calculate Churn!
 Refer to ConsecutiveLogins.JPG
 
+WITH
+  login_dates AS (
+    SELECT sum(tasks_used) as tasks_used_per_day, user_id, userkey,
+      date as login_date
+    from jentrekin.tasksuseddetail
+   where user_id = 104289
+      group by user_id, userkey,
+      date
+    order by login_date
+  )
+ ,
+  login_date_groups AS (
+    SELECT
+      login_date,
+      login_date - row_number() OVER (ORDER BY user_id, login_date) AS grp,
+      tasks_used_per_day,
+      user_id,
+      userkey
+    FROM login_dates
+  )
+  --,login_group_ranges as (
+      SELECT
+        min(login_date)                       AS FirstLogin,
+        max(login_date)                          LastLogin,
+        max(login_date) - min(login_date) + 1 AS [DaysConsecutivelyLoggedIn],
+        row_number()
+        OVER (
+          ORDER BY user_id, grp  )                      as row_number,
+        sum(tasks_used_per_day) as tasks_used_per_group,
+        userkey,
+        user_id
+      FROM login_date_groups
+      GROUP BY grp, userkey, user_id
+
+11.	In the 4th level of the nested CTE’s we finally begin to calculate gaps between activity and inactive(churn) dates.
+a.	Here we are executing a self-join on the prior piece of the nested CTE on row_number + 1 = row_number, as highlighted below.  You can see that the row_number function from before becomes very handy as it’s now a trivial matter to “lookup” the next grouping’s first login.
+b.	The self-referencing join allows us to compare the current group of logins to the ‘next’ group of logins.  Using date_diff, we can easily calculate the # of days between the groups.  If it’s > 28, the we’re going to calculate an InactiveDate as LastLogin + 28 days.
+
+Refer to InactiveDates.jpg
+
+
