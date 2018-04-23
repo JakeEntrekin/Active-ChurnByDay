@@ -3,4 +3,4 @@ INSERT INTO factactiveusers (row_number, userkey, validfromdate, validfromdateke
 select row_number, userkey, firstlogin, firstlogindatekey, validloginto, validlogintodatekey
 from factuseractivitydetail
 where churnflag <> 1
-order by firstlogindatekey
+order by firstlogindatekey;
