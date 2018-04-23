@@ -1,4 +1,4 @@
-NSERT INTO jentrekin.factuseractivitydetail (row_number, userkey,  firstlogin, firstlogindatekey, lastlogin, lastlogindatekey, nextlogin, nextlogindatekey, gapsbetweenactivity, inactivedate, inactivedatekey, daysconsecutivelyloggedin, tasksusedpergroup, ValidLoginTo, ValidLoginToDateKey, churnflag)
+INSERT INTO jentrekin.factuseractivitydetail (row_number, userkey,  firstlogin, firstlogindatekey, lastlogin, lastlogindatekey, nextlogin, nextlogindatekey, gapsbetweenactivity, inactivedate, inactivedatekey, daysconsecutivelyloggedin, tasksusedpergroup, ValidLoginTo, ValidLoginToDateKey, churnflag)
 WITH
   login_dates AS (
     SELECT sum(tasks_used) as tasks_used_per_day, user_id, userkey,

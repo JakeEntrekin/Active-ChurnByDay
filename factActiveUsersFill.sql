@@ -1,4 +1,4 @@
-truncate table factactiveusers
+truncate table factactiveusers;
 INSERT INTO factactiveusers (row_number, userkey, validfromdate, validfromdatekey, validtodate, validtodatekey)
 select row_number, userkey, firstlogin, firstlogindatekey, validloginto, validlogintodatekey
 from factuseractivitydetail
